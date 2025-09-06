@@ -372,6 +372,14 @@
       <source src="music.mp3" type="audio/mpeg">
       Таны browser audio-г дэмжихгүй байна.
     </audio>
+   <script>
+     const music = document.getElementById('bgMusic');
+     music.volume = 0.4; // static 0.4
+   
+     document.addEventListener('click', () => {
+       music.play();
+     }, { once: true });
+   </script>
 
     <script>
       const snowRoot = document.getElementById('snow');
