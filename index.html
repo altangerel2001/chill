@@ -108,9 +108,10 @@
       .flake {
         position: fixed; top: -10px;
         width: var(--size); height: var(--size);
-        background: radial-gradient(circle at 40% 40%, #fff 0 45%, rgba(255,255,255,.6) 60%, rgba(255,255,255,0) 70%);
+        background: radial-gradient(circle at 40% 40%,#fff 0 45%,rgba(255,255,255,.9) 60%,rgba(180,220,255,.4) 70%,transparent 80%);
         border-radius: 50%; opacity: var(--opacity);
-        filter: drop-shadow(0 0 2px rgba(255,255,255,.4));
+        filter: drop-shadow(0 0 4px rgba(255,255,255,.8))
+                drop-shadow(0 0 8px rgba(200,220,255,.6));
         animation:
           fall var(--fall) linear var(--delay) infinite,
           sway var(--sway) ease-in-out var(--delay) infinite;
@@ -184,7 +185,7 @@
         for (let i = 0; i < count; i++) {
           const f = document.createElement('span');
           f.className = 'flake';
-          const size = rand(1.5, 4.5); // px
+          const size = rand(3, 8); // px
           const fall = rand(6, 13); // s
           const sway = rand(3.5, 8.5); // s
           const delay = rand(-fall, 0); // start at random positions
