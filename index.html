@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="mn">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Гудамжны гэрэл + Цасны анимац</title>
+    <style>
+      :root {
+        --sky-top: #0a0f1f;
+        --sky-bottom: #1b2947;
+        --ground: #0d1426;
+        --lamp-metal: #4c566a;
+        --lamp-glow: 255, 236, 179; /* rgb for lamp glow */
+        --snow-count: 220; /* initial flake count */
+      }
+
+      * { box-sizing: border-box; }
+      html, body { height: 100%; }
+      body {
+        margin: 0;
+        font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+        background: linear-gradient(to bottom, var(--sky-top), var(--sky-bottom));
+        overflow: hidden;
+        color: #e5e9f0;
+      }
+
+      /* Scene Wrapper */
+      .scene {
+        position: relative;
+        height: 100vh;
+        width: 100vw;
+        display: grid;
+        place-items: end center;
+      }
+
+      /* Subtle stars */
+      .stars {
+        position: absolute; inset: 0; pointer-events: none; opacity: .6;
+        background-image:
+          radial-gradient(2px 2px at 10% 20%, rgba(255,255,255,.7) 50%, transparent 60%),
+          radial-gradient(1px 1px at 25% 60%, rgba(255,255,255,.8) 50%, transparent 60%),
+          radial-gradient(1.5px 1.5px at 40% 30%, rgba(255,255,255,.5) 50%, transparent 60%),
+          radial-gradient(1px 1px at 70% 50%, rgba(255,255,255,.6) 50%, transparent 60%),
+          radial-gradient(1.5px 1.5px at 85% 15%, rgba(255,255,255,.5) 50%, transparent 60%),
+          radial-gradient(2px 2px at 90% 70%, rgba(255,255,255,.7) 50%, transparent 60%);
+        background-repeat: no-repeat;
+      }
+
+      /* Ground */
+      .ground {
+        position: absolute; left: 0; right: 0; bottom: 0; height: 28vh;
+        background:
+          radial-gradient(60vw 20vh at 50% 0%, rgba(255,255,255,.05), transparent 60%),
+          linear-gradient(to top, var(--ground), transparent 80%);
+      }
+
+      /* Streetlight */
+      .streetlight {
+        position: absolute; bottom: 28vh; /* sits on ground */ left: 50%; transform: translateX(-50%);
+        width: 14px; height: 44vh;
+        background: linear-gradient(#505a6e, #3e4757);
+        border-radius: 8px;
+        box-shadow: inset 0 0 4px rgba(0,0,0,.6);
+      }
+      .streetlight::before { /* base */
+        content: "";
+        position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%);
+        width: 110px; height: 14px; border-radius: 10px;
+        background: linear-gradient(#2a2f3a, #1f2430);
+        box-shadow: 0 10px 20px rgba(0,0,0,.5);
+      }
+      .arm {
+        position: absolute; top: 4vh; left: 50%; transform: translateX(-50%);
+        width: 160px; height: 10px; border-radius: 10px; background: #434c5e;
+      }
+      .arm::after { /* droop */
+        content: ""; position: absolute; right: -6px; top: 0;
+        width: 10px; height: 90px; border-radius: 10px; background: #434c5e;
+      }
+      .lamp {
+        --bulb-size: 26px;
+        position: absolute; top: calc(4vh + 80px); left: calc(50% + 152px);
+        width: var(--bulb-size); height: var(--bulb-size); border-radius: 50%;
+        background: radial-gradient(circle at 45% 35%, rgba(var(--lamp-glow),1) 0 40%, rgba(var(--lamp-glow),.7) 55%, rgba(var(--lamp-glow),0) 75%);
+        box-shadow:
+          0 0 14px 6px rgba(var(--lamp-glow), .85),
+          0 0 44px 16px rgba(var(--lamp-glow), .35);
+      }
+      .cone { /* light cone */
+        position: absolute; top: calc(4vh + 90px); left: calc(50% + 135px);
+        width: 340px; height: 60vh; pointer-events: none;
+        transform-origin: top left; transform: rotate(16deg);
+        background: conic-gradient(from 180deg at 0 0,
+          rgba(var(--lamp-glow), .38), rgba(var(--lamp-glow), .18) 20%, rgba(var(--lamp-glow),0) 35%);
+        -webkit-mask: linear-gradient(to bottom, rgba(0,0,0,1), rgba(0,0,0,.6) 35%, rgba(0,0,0,0) 80%);
+                mask: linear-gradient(to bottom, rgba(0,0,0,1), rgba(0,0,0,.6) 35%, rgba(0,0,0,0) 80%);
+        filter: blur(0.6px);
+      }
+      .halo { /* warm ground halo */
+        position: absolute; bottom: 28vh; left: calc(50% + 230px);
+        width: 260px; height: 48px; transform: translateX(-50%) skewX(16deg);
+        background: radial-gradient(60% 100% at 50% 50%, rgba(var(--lamp-glow), .28), rgba(255,255,255,0) 70%);
+        filter: blur(6px);
+      }
+
+      /* Snow */
+      #snow { position: absolute; inset: 0; pointer-events: none; }
+      .flake {
+        position: fixed; top: -10px;
+        width: var(--size); height: var(--size);
+        background: radial-gradient(circle at 40% 40%, #fff 0 45%, rgba(255,255,255,.6) 60%, rgba(255,255,255,0) 70%);
+        border-radius: 50%; opacity: var(--opacity);
+        filter: drop-shadow(0 0 2px rgba(255,255,255,.4));
+        animation:
+          fall var(--fall) linear var(--delay) infinite,
+          sway var(--sway) ease-in-out var(--delay) infinite;
+      }
+      @keyframes fall {
+        to { transform: translateY(110vh) translateX(0); }
+      }
+      @keyframes sway {
+        0%, 100% { margin-left: 0; }
+        50% { margin-left: var(--wind); }
+      }
+
+      /* UI Controls */
+      .controls {
+        position: fixed; top: 16px; right: 16px;
+        background: rgba(13,20,38,.6);
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(255,255,255,.08);
+        border-radius: 16px; padding: 10px 12px; display: flex; gap: 10px; align-items: center;
+        box-shadow: 0 6px 24px rgba(0,0,0,.25);
+      }
+      .controls label { font-size: 12px; opacity: .9; }
+      .controls input[type="range"] { width: 140px; }
+      .controls button {
+        border: none; padding: 8px 12px; border-radius: 12px; cursor: pointer;
+        background: rgba(255,255,255,.08); color: #e5e9f0; font-weight: 600;
+      }
+      .controls button:hover { background: rgba(255,255,255,.14); }
+
+      /* Mobile tweaks */
+      @media (max-width: 640px) {
+        .arm { width: 120px; }
+        .lamp { left: calc(50% + 116px); }
+        .cone { left: calc(50% + 100px); width: 260px; transform: rotate(18deg); }
+        .halo { left: calc(50% + 170px); width: 200px; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="scene" role="img" aria-label="Шөнийн тэнгэр, гудамжны гэрэл, цас бударч байна">
+      <div class="stars"></div>
+      <div id="snow" aria-hidden="true"></div>
+
+      <div class="streetlight" aria-hidden="true">
+        <div class="arm"></div>
+      </div>
+      <div class="lamp" aria-hidden="true"></div>
+      <div class="cone" aria-hidden="true"></div>
+      <div class="halo" aria-hidden="true"></div>
+      <div class="ground" aria-hidden="true"></div>
+    </div>
+
+    <div class="controls">
+      <label for="density">Цас: <span id="densityValue">220</span></label>
+      <input id="density" type="range" min="40" max="600" value="220" />
+      <button id="windBtn" type="button">Салхи ↔</button>
+    </div>
+
+    <script>
+      const snowRoot = document.getElementById('snow');
+      const densityInput = document.getElementById('density');
+      const densityValue = document.getElementById('densityValue');
+      const windBtn = document.getElementById('windBtn');
+
+      let windDirection = 1; // 1 => баруун тийш, -1 => зүүн тийш
+
+      function rand(min, max) { return Math.random() * (max - min) + min; }
+
+      function spawnFlakes(count) {
+        const frag = document.createDocumentFragment();
+        for (let i = 0; i < count; i++) {
+          const f = document.createElement('span');
+          f.className = 'flake';
+          const size = rand(1.5, 4.5); // px
+          const fall = rand(6, 13); // s
+          const sway = rand(3.5, 8.5); // s
+          const delay = rand(-fall, 0); // start at random positions
+          const left = rand(-5, 105); // vw, start slightly outside edges
+          const wind = rand(12, 38) * windDirection; // px side drift
+          const opacity = rand(.55, 1);
+
+          f.style.setProperty('--size', size + 'px');
+          f.style.setProperty('--fall', fall + 's');
+          f.style.setProperty('--sway', sway + 's');
+          f.style.setProperty('--delay', delay + 's');
+          f.style.left = left + 'vw';
+          f.style.setProperty('--wind', wind + 'px');
+          f.style.setProperty('--opacity', opacity);
+
+          frag.appendChild(f);
+        }
+        snowRoot.appendChild(frag);
+      }
+
+      function resetSnow(count) {
+        snowRoot.innerHTML = '';
+        spawnFlakes(count);
+      }
+
+      // initialize
+      const initial = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--snow-count')) || 220;
+      resetSnow(initial);
+
+      densityInput.addEventListener('input', (e) => {
+        const val = parseInt(e.target.value, 10);
+        densityValue.textContent = val;
+        resetSnow(val);
+      });
+
+      windBtn.addEventListener('click', () => {
+        windDirection *= -1; // flip
+        // update existing flakes with new wind on the fly
+        document.querySelectorAll('.flake').forEach(f => {
+          const current = parseFloat(getComputedStyle(f).getPropertyValue('--wind')) || 20;
+          const mag = Math.abs(current);
+          f.style.setProperty('--wind', (mag * windDirection) + 'px');
+        });
+      });
+
+      // Performance: recycle flakes when they leave viewport (optional but nice)
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (!entry.isIntersecting && entry.boundingClientRect.top > window.innerHeight) {
+            const f = entry.target;
+            // respawn at top with new randoms
+            const size = rand(1.5, 4.5);
+            const fall = rand(6, 13);
+            const sway = rand(3.5, 8.5);
+            const delay = 0;
+            const left = rand(-5, 105);
+            const wind = rand(12, 38) * windDirection;
+            const opacity = rand(.55, 1);
+            f.style.setProperty('--size', size + 'px');
+            f.style.setProperty('--fall', fall + 's');
+            f.style.setProperty('--sway', sway + 's');
+            f.style.setProperty('--delay', delay + 's');
+            f.style.left = left + 'vw';
+            f.style.setProperty('--wind', wind + 'px');
+            f.style.setProperty('--opacity', opacity);
+            f.style.transform = 'translateY(-10px)';
+          }
+        });
+      }, { root: null, threshold: 0 });
+
+      // Observe flakes after initial spawn
+      const startObserving = () => document.querySelectorAll('.flake').forEach(f => observer.observe(f));
+      // Wait a tick so flakes exist, then observe
+      setTimeout(startObserving, 50);
+    </script>
+  </body>
+</html>
