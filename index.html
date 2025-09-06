@@ -54,56 +54,6 @@
           radial-gradient(60vw 20vh at 50% 0%, rgba(255,255,255,.05), transparent 60%),
           linear-gradient(to top, var(--ground), transparent 80%);
       }
-
-      /* Streetlight */
-      .streetlight {
-        position: absolute; bottom: 28vh; /* sits on ground */ left: 50%; transform: translateX(-50%);
-        width: 14px; height: 44vh;
-        background: linear-gradient(#505a6e, #3e4757);
-        border-radius: 8px;
-        box-shadow: inset 0 0 4px rgba(0,0,0,.6);
-      }
-      .streetlight::before { /* base */
-        content: "";
-        position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%);
-        width: 110px; height: 14px; border-radius: 10px;
-        background: linear-gradient(#2a2f3a, #1f2430);
-        box-shadow: 0 10px 20px rgba(0,0,0,.5);
-      }
-      .arm {
-        position: absolute; top: 4vh; left: 50%; transform: translateX(-50%);
-        width: 160px; height: 10px; border-radius: 10px; background: #434c5e;
-      }
-      .arm::after { /* droop */
-        content: ""; position: absolute; right: -6px; top: 0;
-        width: 10px; height: 90px; border-radius: 10px; background: #434c5e;
-      }
-      .lamp {
-        --bulb-size: 26px;
-        position: absolute; top: calc(4vh + 80px); left: calc(50% + 152px);
-        width: var(--bulb-size); height: var(--bulb-size); border-radius: 50%;
-        background: radial-gradient(circle at 45% 35%, rgba(var(--lamp-glow),1) 0 40%, rgba(var(--lamp-glow),.7) 55%, rgba(var(--lamp-glow),0) 75%);
-        box-shadow:
-          0 0 14px 6px rgba(var(--lamp-glow), .85),
-          0 0 44px 16px rgba(var(--lamp-glow), .35);
-      }
-      .cone { /* light cone */
-        position: absolute; top: calc(4vh + 90px); left: calc(50% + 135px);
-        width: 340px; height: 60vh; pointer-events: none;
-        transform-origin: top left; transform: rotate(16deg);
-        background: conic-gradient(from 180deg at 0 0,
-          rgba(var(--lamp-glow), .38), rgba(var(--lamp-glow), .18) 20%, rgba(var(--lamp-glow),0) 35%);
-        -webkit-mask: linear-gradient(to bottom, rgba(0,0,0,1), rgba(0,0,0,.6) 35%, rgba(0,0,0,0) 80%);
-                mask: linear-gradient(to bottom, rgba(0,0,0,1), rgba(0,0,0,.6) 35%, rgba(0,0,0,0) 80%);
-        filter: blur(0.6px);
-      }
-      .halo { /* warm ground halo */
-        position: absolute; bottom: 28vh; left: calc(50% + 230px);
-        width: 260px; height: 48px; transform: translateX(-50%) skewX(16deg);
-        background: radial-gradient(60% 100% at 50% 50%, rgba(var(--lamp-glow), .28), rgba(255,255,255,0) 70%);
-        filter: blur(6px);
-      }
-
       /* Snow */
       #snow { position: absolute; inset: 0; pointer-events: none; }
       .flake {
@@ -185,7 +135,7 @@
         for (let i = 0; i < count; i++) {
           const f = document.createElement('span');
           f.className = 'flake';
-          const size = rand(1.5, 4.5); // px
+          const size = rand(10, 15); // px
           const fall = rand(6, 13); // s
           const sway = rand(3.5, 8.5); // s
           const delay = rand(-fall, 0); // start at random positions
