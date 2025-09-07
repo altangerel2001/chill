@@ -221,231 +221,215 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Seasons Night Scene — Winter / Summer / Autumn</title>
+  <title>Weather Effects</title>
   <style>
-    :root{
-      --snow-count: 220;
+    body, html {
+      margin: 0;
+      height: 100%;
+      overflow: hidden;
+      background: #001; /* анхны харанхуй background */
+      color: white;
+      text-align: center;
     }
-    *{box-sizing:border-box}
-    html,body{height:100%;margin:0;overflow:hidden;font-family:sans-serif;}
-    body{color:#e6eef8;}
-
-    .scene{position:relative;width:100vw;height:100vh;overflow:hidden}
-
-    /* Vignette */
-    .vignette { position:absolute; inset:0; pointer-events:none;
-      background: radial-gradient(60% 60% at 50% 40%, rgba(0,0,0,0) 0%, rgba(0,0,8,0.5) 80%);
-      mix-blend-mode: multiply; z-index:2;
+    canvas {
+      display: block;
     }
-
-    /* Fog */
-    .fog { position:absolute; left:-20%; top:5%; width:140%; height:50%;
-      background: linear-gradient(90deg, rgba(255,255,255,0.02) 0%, rgba(255,255,255,0.03) 50%, rgba(255,255,255,0.01) 100%);
-      filter: blur(22px); opacity:0.9; animation: drift 28s linear infinite; pointer-events:none; z-index:4;
-    }
-    @keyframes drift { 0%{transform:translateX(-6%)} 50%{transform:translateX(6%)} 100%{transform:translateX(-6%)} }
-
-    /* Stars */
-    .stars { position:absolute; inset:0; pointer-events:none; z-index:3; }
-    .star { position:absolute; width:2px; height:2px; border-radius:50%; background:rgba(255,255,255,0.9);
-      animation: twinkle linear infinite; }
-    @keyframes twinkle { 0%{opacity:0.3} 50%{opacity:1} 100%{opacity:0.3} }
-
-    /* Moon */
-    .moon { position:absolute; top:7vh; right:14vw; width:120px; height:120px; border-radius:50%;
-      background: radial-gradient(circle at 32% 30%, #fffaf0 0 55%, #f0e6bf 68%, rgba(200,180,120,0.9) 100%);
-      box-shadow: 0 0 60px 28px rgba(255,245,200,0.18), 0 0 18px 6px rgba(255,255,255,0.06) inset;
-      z-index:6; }
-    .moon-halo { position:absolute; top:4.8vh; right:13.2vw; width:260px; height:260px; border-radius:50%;
-      background: radial-gradient(circle, rgba(210,210,170,0.12) 0%, transparent 70%);
-      filter: blur(18px); z-index:5; pointer-events:none; }
-
-    /* Ground */
-    .ground { position:absolute; left:0; right:0; bottom:0; height:28vh;
-      background: linear-gradient(to top, rgba(8,12,20,1) 0%, transparent 100%); z-index:4; }
-
-    /* Snow */
-    #snow{position:absolute;inset:0;pointer-events:none;z-index:10}
-    .flake{ position:fixed; top:-10px; border-radius:50%;
-      background: radial-gradient(circle at 40% 40%, #fff 0 45%, rgba(220,235,255,0.6) 75%, transparent 85%);
-      animation: fall linear infinite, sway ease-in-out infinite; }
-    @keyframes fall{ to { transform: translateY(115vh); } }
-    @keyframes sway{ 0%,100%{margin-left:0} 50%{margin-left:var(--wind);} }
-
-    /* Rain */
-    .rain{position:absolute;inset:0;pointer-events:none;z-index:12}
-    .drop{position:absolute;width:2px;height:20px;background:rgba(200,200,255,0.4);animation:rainFall linear infinite;}
-    @keyframes rainFall{to{transform:translateY(110vh);}}
-
-    /* Leaves */
-    .leaves{position:absolute;inset:0;pointer-events:none;z-index:12}
-    .leaf{position:absolute;width:18px;height:18px;
-      background: radial-gradient(circle at 30% 30%, #e38c2f 0%, #b44c00 70%, transparent 80%);
-      border-radius:50% 40% 50% 40%; opacity:0.85;
-      animation: leafFall linear infinite, leafSway ease-in-out infinite;}
-    @keyframes leafFall{to{transform:translateY(110vh);}}
-    @keyframes leafSway{0%,100%{transform:rotate(0deg);}50%{transform:rotate(160deg);}}
-
-    /* Controls */
     .controls {
-      position: fixed; top: 16px; right: 16px; z-index:60;
-      background: rgba(8,12,20,0.55); backdrop-filter: blur(6px);
-      border-radius: 12px; padding: 8px 10px; display:flex; gap:8px; align-items:center;
-      color:#eaf4ff; font-size:13px;
+      position: fixed;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 100;
     }
-    .playBtn { border:none; background:rgba(255,255,255,0.1); color:#fff; padding:6px 10px; border-radius:8px; cursor:pointer; }
-    .playBtn:hover{ filter:brightness(1.1) }
-
-    /* Season backgrounds */
-    body.winter {
-      background: linear-gradient(180deg,#020617 0%,#071432 45%,#0b2546 100%);
+    button {
+      margin: 5px;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      background: #444;
+      color: #fff;
+      cursor: pointer;
     }
-    body.summer {
-      background: linear-gradient(180deg,#011e2d 0%,#033d47 50%,#042f2f 100%);
-    }
-    body.autumn {
-      background: linear-gradient(180deg,#2b0d01 0%,#5e2b05 50%,#1f0a01 100%);
+    button:hover {
+      background: #666;
     }
   </style>
 </head>
 <body>
-  <div class="scene">
-    <div class="vignette"></div>
-    <div class="fog"></div>
-    <div class="stars" id="starsLayer"></div>
-    <div class="moon-halo"></div>
-    <div class="moon"></div>
-    <div id="snow"></div>
-    <div class="rain" id="rain"></div>
-    <div class="leaves" id="leaves"></div>
-    <div class="ground"></div>
-  </div>
-
   <div class="controls">
-    <button id="seasonBtn" class="playBtn">Change Season</button>
-    <button id="musicToggle" class="playBtn">Play Music</button>
+    <button onclick="setEffect('snow')">❄️ Цас</button>
+    <button onclick="setEffect('rain')">🌧️ Бороо</button>
+    <button onclick="setEffect('fog')">🌫️ Манан</button>
+    <button onclick="setEffect('stars')">✨ Одод</button>
   </div>
+  <canvas id="canvas"></canvas>
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
 
-  <!-- Music -->
-  <audio id="winterMusic" loop preload="auto">
-    <source src="winter.mp3" type="audio/mpeg">
-  </audio>
-  <audio id="summerMusic" loop preload="auto">
-    <source src="summer.mp3" type="audio/mpeg">
-  </audio>
-  <audio id="autumnMusic" loop preload="auto">
-    <source src="autumn.mp3" type="audio/mpeg">
-  </audio>
+    let effect = 'snow'; // эхлэх үед цас
 
-<script>
-/* Stars */
-(function makeStars(){
-  const starsLayer=document.getElementById('starsLayer');
-  for(let i=0;i<38;i++){
-    const s=document.createElement('div');
-    s.className='star';
-    s.style.left=Math.random()*100+'vw';
-    s.style.top=Math.random()*50+'vh';
-    s.style.width=s.style.height=(Math.random()*1.6+0.6)+'px';
-    s.style.animationDuration=(2+Math.random()*3)+'s';
-    s.style.animationDelay=Math.random()*6+'s';
-    starsLayer.appendChild(s);
-  }
-})();
+    // ========= ЦАС =========
+    let snowflakes = [];
+    function createSnowflakes() {
+      snowflakes = [];
+      for (let i = 0; i < 200; i++) {
+        snowflakes.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          radius: Math.random() * 3 + 2,
+          speed: Math.random() * 1 + 0.5
+        });
+      }
+    }
 
-/* Snow */
-function spawnSnow(count){
-  const snow=document.getElementById('snow');
-  snow.innerHTML='';
-  for(let i=0;i<count;i++){
-    const f=document.createElement('div');
-    f.className='flake';
-    const size=(Math.random()*4+2)+'px';
-    f.style.width=f.style.height=size;
-    f.style.left=Math.random()*100+'vw';
-    f.style.animationDuration=(6+Math.random()*8)+'s';
-    f.style.animationDelay=(-Math.random()*10)+'s';
-    f.style.setProperty('--wind',(Math.random()*40-20)+'px');
-    snow.appendChild(f);
-  }
-}
-spawnSnow(220);
+    function drawSnow() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = 'white';
+      for (let flake of snowflakes) {
+        ctx.beginPath();
+        ctx.arc(flake.x, flake.y, flake.radius, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
 
-/* Rain */
-function spawnRain(count){
-  const rain=document.getElementById('rain');
-  rain.innerHTML='';
-  for(let i=0;i<count;i++){
-    const d=document.createElement('div');
-    d.className='drop';
-    d.style.left=Math.random()*100+'vw';
-    d.style.animationDuration=(0.6+Math.random()*0.6)+'s';
-    d.style.animationDelay=(-Math.random()*1)+'s';
-    rain.appendChild(d);
-  }
-}
-spawnRain(150);
+    function updateSnow() {
+      for (let flake of snowflakes) {
+        flake.y += flake.speed;
+        if (flake.y > canvas.height) {
+          flake.y = -flake.radius;
+          flake.x = Math.random() * canvas.width;
+        }
+      }
+    }
 
-/* Leaves */
-function spawnLeaves(count){
-  const leaves=document.getElementById('leaves');
-  leaves.innerHTML='';
-  for(let i=0;i<count;i++){
-    const l=document.createElement('div');
-    l.className='leaf';
-    l.style.left=Math.random()*100+'vw';
-    l.style.animationDuration=(5+Math.random()*6)+'s';
-    l.style.animationDelay=(-Math.random()*6)+'s';
-    leaves.appendChild(l);
-  }
-}
-spawnLeaves(40);
+    // ========= БОРОО =========
+    let raindrops = [];
+    function createRaindrops() {
+      raindrops = [];
+      for (let i = 0; i < 300; i++) {
+        raindrops.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          length: Math.random() * 20 + 10,
+          speed: Math.random() * 4 + 4
+        });
+      }
+    }
 
-/* Seasons switching */
-const body=document.body;
-const seasons=['winter','summer','autumn'];
-let current=0;
-body.classList.add(seasons[current]);
+    function drawRain() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.strokeStyle = 'rgba(174,194,224,0.5)';
+      ctx.lineWidth = 1;
+      for (let drop of raindrops) {
+        ctx.beginPath();
+        ctx.moveTo(drop.x, drop.y);
+        ctx.lineTo(drop.x, drop.y + drop.length);
+        ctx.stroke();
+      }
+    }
 
-const seasonBtn=document.getElementById('seasonBtn');
-const musicToggle=document.getElementById('musicToggle');
-const musicMap={
-  winter:document.getElementById('winterMusic'),
-  summer:document.getElementById('summerMusic'),
-  autumn:document.getElementById('autumnMusic')
-};
-let currentMusic=musicMap['winter'];
-currentMusic.volume=0.4;
+    function updateRain() {
+      for (let drop of raindrops) {
+        drop.y += drop.speed;
+        if (drop.y > canvas.height) {
+          drop.y = -drop.length;
+          drop.x = Math.random() * canvas.width;
+        }
+      }
+    }
 
-function switchSeason(){
-  // stop old music
-  currentMusic.pause(); currentMusic.currentTime=0;
+    // ========= МАНАН =========
+    let fogParticles = [];
+    function createFog() {
+      fogParticles = [];
+      for (let i = 0; i < 50; i++) {
+        fogParticles.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          radius: Math.random() * 200 + 100,
+          speed: Math.random() * 0.3 + 0.2
+        });
+      }
+    }
 
-  body.classList.remove(...seasons);
-  current=(current+1)%seasons.length;
-  const newSeason=seasons[current];
-  body.classList.add(newSeason);
+    function drawFog() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = 'rgba(200,200,200,0.05)';
+      for (let fog of fogParticles) {
+        ctx.beginPath();
+        ctx.arc(fog.x, fog.y, fog.radius, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
 
-  currentMusic=musicMap[newSeason];
-  currentMusic.volume=0.4;
-  currentMusic.play().catch(()=>{});
-}
+    function updateFog() {
+      for (let fog of fogParticles) {
+        fog.x += fog.speed;
+        if (fog.x - fog.radius > canvas.width) {
+          fog.x = -fog.radius;
+        }
+      }
+    }
 
-seasonBtn.addEventListener('click', switchSeason);
+    // ========= ОДОД =========
+    let stars = [];
+    function createStars() {
+      stars = [];
+      for (let i = 0; i < 150; i++) {
+        stars.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          radius: Math.random() * 1.5
+        });
+      }
+    }
 
-/* Music toggle */
-musicToggle.addEventListener('click',()=>{
-  if(currentMusic.paused){
-    currentMusic.play(); currentMusic.volume=0.4;
-    musicToggle.textContent='Pause Music';
-  }else{
-    currentMusic.pause();
-    musicToggle.textContent='Play Music';
-  }
-});
-</script>
+    function drawStars() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = 'white';
+      for (let star of stars) {
+        ctx.beginPath();
+        ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    function updateStars() {
+      // optional: twinkling effect
+    }
+
+    // ========= EFFECT SWITCH =========
+    function setEffect(newEffect) {
+      effect = newEffect;
+      if (effect === 'snow') createSnowflakes();
+      if (effect === 'rain') createRaindrops();
+      if (effect === 'fog') createFog();
+      if (effect === 'stars') createStars();
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+      if (effect === 'snow') {
+        drawSnow(); updateSnow();
+      } else if (effect === 'rain') {
+        drawRain(); updateRain();
+      } else if (effect === 'fog') {
+        drawFog(); updateFog();
+      } else if (effect === 'stars') {
+        drawStars(); updateStars();
+      }
+    }
+
+    // эхлүүлэх
+    setEffect('snow');
+    animate();
+  </script>
 </body>
 </html>
+
 
 
 
