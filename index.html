@@ -242,11 +242,21 @@
 
     /* Rain */
     .drop {
-      position:absolute; width:2px; height:18px;
-      background:rgba(200,200,255,0.4); will-change: transform;
-      animation: rainFall linear infinite;
-    }
-    @keyframes rainFall { to { transform: translate3d(0, 110vh, 0); } }
+     position: absolute;
+     width: 2px; height: 18px;
+     background: rgba(200,200,255,0.5);
+     will-change: transform;
+     animation: rainFall linear infinite, rainSway ease-in-out infinite;
+   }
+   
+   @keyframes rainFall {
+     to { transform: translate3d(0, 110vh, 0); }
+   }
+   
+   @keyframes rainSway {
+     0%,100% { transform: translateX(0px); }
+     50% { transform: translateX(10px); } /* салхины хазайлт */
+   }
 
     /* Controls */
     .controls {
@@ -272,13 +282,13 @@
       <input id="snowRange" type="range" min="20" max="300" value="120">
     </label>
     <label>🌧 Бороо хурд
-      <input id="rainRange" type="range" min="500" max="2000" value="1000">
+      <input id="rainRange" type="range" min="100" max="2000" value="1000">
     </label>
   </div>
 
   <!-- Music -->
   <audio id="snowMusic" loop>
-    <source src="winter.mp3" type="audio/mpeg">
+    <source src="music.mp3" type="audio/mpeg">
   </audio>
   <audio id="rainMusic" loop>
     <source src="rain.mp3" type="audio/mpeg">
@@ -318,14 +328,19 @@ function spawnSnow(count){
 }
 
 // Rain generator
-function spawnRain(count=100){
+function spawnRain(count=120){
   rainLayer.innerHTML='';
   for(let i=0;i<count;i++){
     const d=document.createElement('div');
     d.className='drop';
     d.style.left=Math.random()*100+'vw';
-    d.style.animationDuration=(rainDuration/1000)+'s';
-    d.style.animationDelay=(-Math.random()*2)+'s';
+
+    // Дусал бүрийн хурд өөр (random)
+    const duration = (rainDuration/1000) * (0.5 + Math.random()*1.2);
+    d.style.animationDuration = duration + 's, ' + (2+Math.random()*2)+'s'; 
+    // эхний animation (fall) хугацаа, хоёр дахь (sway) хугацаа
+
+    d.style.animationDelay = (-Math.random()*3)+'s, '+(-Math.random()*2)+'s';
     rainLayer.appendChild(d);
   }
 }
