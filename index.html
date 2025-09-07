@@ -219,216 +219,378 @@
 <!doctype html>
 <html lang="mn">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Weather Effects</title>
-  <style>
-    body, html {
-      margin: 0;
-      height: 100%;
-      overflow: hidden;
-      background: #001; /* анхны харанхуй background */
-      color: white;
-      text-align: center;
-    }
-    canvas {
-      display: block;
-    }
-    .controls {
-      position: fixed;
-      top: 10px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 100;
-    }
-    button {
-      margin: 5px;
-      padding: 10px 20px;
-      border: none;
-      border-radius: 8px;
-      background: #444;
-      color: #fff;
-      cursor: pointer;
-    }
-    button:hover {
-      background: #666;
-    }
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Seasons Night — Adjustable Effects</title>
+<style>
+  :root{ --bg-dark:#041022; }
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0;overflow:hidden;font-family:system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial;}
+  body{background:linear-gradient(180deg,#020617 0%, #071432 60% , #0b2546 100%); color:#eaf4ff}
+
+  .scene{position:relative;width:100vw;height:100vh;overflow:hidden}
+  .vignette{position:absolute;inset:0;pointer-events:none;background:radial-gradient(60% 60% at 50% 40%, rgba(0,0,0,0) 0%, rgba(0,0,8,0.55) 80%);mix-blend-mode:multiply;z-index:8}
+  .fog-layer{position:absolute;left:-20%;top:6%;width:140%;height:48%;filter:blur(22px);opacity:0.9;animation:drift 30s linear infinite;pointer-events:none;z-index:6}
+  @keyframes drift{0%{transform:translateX(-6%)}50%{transform:translateX(6%)}100%{transform:translateX(-6%)}}
+
+  .moon{position:absolute;top:7vh;right:12vw;width:120px;height:120px;border-radius:50%;z-index:7;
+    background:radial-gradient(circle at 32% 30%, #fffaf0 0 55%, #f0e6bf 68%);box-shadow:0 0 60px 28px rgba(255,245,200,0.18)}
+  .moon-halo{position:absolute;top:4.8vh;right:11.2vw;width:260px;height:260px;border-radius:50%;filter:blur(18px);z-index:6;background:radial-gradient(circle, rgba(210,210,170,0.12) 0%, transparent 70%)}
+
+  .ground{position:absolute;left:0;right:0;bottom:0;height:28vh;background:linear-gradient(to top, rgba(8,12,20,1) 0%, transparent 100%);z-index:5}
+
+  /* layers */
+  #snowLayer,#rainLayer,#leavesLayer,#starsLayer{position:absolute;inset:0;pointer-events:none;z-index:10}
+
+  /* snow flake style (size/opacity controlled inline) */
+  .flake{ position:fixed; top:-10px; border-radius:50%;
+    background: radial-gradient(circle at 40% 40%, #fff 0 45%, rgba(220,235,255,0.7) 75%, transparent 85%);
+    filter: drop-shadow(0 0 6px rgba(210,230,255,0.06)); animation: fall linear infinite, sway ease-in-out infinite; }
+
+  @keyframes fall{ to{ transform: translateY(115vh); } }
+  @keyframes sway{ 0%,100%{margin-left:0} 50%{margin-left:var(--wind);} }
+
+  /* rain */
+  .drop{position:absolute;width:2px;height:22px;background:rgba(200,210,255,0.45);animation:rainFall linear infinite;opacity:0.9}
+  @keyframes rainFall{to{transform:translateY(110vh);}}
+
+  /* leaves */
+  .leaf{position:absolute;width:18px;height:18px;border-radius:50% 40% 50% 40%;
+    background: radial-gradient(circle at 30% 30%, #e38c2f 0%, #b44c00 70%, transparent 80%);opacity:0.95;
+    animation: leafFall linear infinite, leafSway ease-in-out infinite;}
+  @keyframes leafFall{to{transform:translateY(110vh)}}
+  @keyframes leafSway{0%,100%{transform:rotate(0deg)}50%{transform:rotate(160deg)}}
+
+  /* stars small dots */
+  .star{position:absolute;width:2px;height:2px;border-radius:50%;background:rgba(255,255,255,0.95);opacity:0.9;animation:twinkle linear infinite}
+  @keyframes twinkle{0%{opacity:0.35}50%{opacity:1}100%{opacity:0.35}}
+
+  /* controls */
+  .controls{position:fixed;top:12px;right:12px;z-index:60;background:rgba(4,8,14,0.6);backdrop-filter:blur(6px);padding:10px;border-radius:12px;color:#eaf4ff;display:flex;flex-direction:column;gap:8px;min-width:220px}
+  .row{display:flex;gap:8px;align-items:center}
+  .btn{border:none;padding:8px 10px;border-radius:8px;background:rgba(255,255,255,0.06);color:#eaf4ff;cursor:pointer}
+  .btn:active{transform:translateY(1px)}
+  label{font-size:13px;color:#cfe6ff}
+  input[type="range"]{width:140px}
+
+  /* show/hide per-season controls */
+  .effect-controls{display:none;flex-direction:column;gap:6px}
+  .effect-controls.active{display:flex}
+
+  /* body themes (visual) */
+  body.winter{ background: linear-gradient(180deg,#020617 0%, #071432 55%, #0b2546 100%); }
+  body.summer{ background: linear-gradient(180deg,#061428 0%, #053f47 55%, #042f2f 100%); }
+  body.autumn{ background: linear-gradient(180deg,#2b0d01 0%, #5e2b05 55%, #1f0a01 100%); }
+
+  @media (max-width:640px){ .controls{right:8px;left:8px;min-width:auto} }
+</style>
 </head>
-<body>
-  <div class="controls">
-    <button onclick="setEffect('snow')">❄️ Цас</button>
-    <button onclick="setEffect('rain')">🌧️ Бороо</button>
-    <button onclick="setEffect('fog')">🌫️ Манан</button>
-    <button onclick="setEffect('stars')">✨ Одод</button>
+<body class="winter">
+  <div class="scene" role="img" aria-label="Манантай шөнө — улиралын эффект">
+    <div class="vignette"></div>
+    <div class="fog-layer" id="fogLayer" style="background:linear-gradient(90deg, rgba(255,255,255,0.02) 0%, rgba(255,255,255,0.03) 50%, rgba(255,255,255,0.01) 100%);"></div>
+    <div id="starsLayer"></div>
+    <div class="moon-halo"></div>
+    <div class="moon"></div>
+    <div id="snowLayer"></div>
+    <div id="rainLayer"></div>
+    <div id="leavesLayer"></div>
+    <div class="ground"></div>
   </div>
-  <canvas id="canvas"></canvas>
-  <script>
-    const canvas = document.getElementById('canvas');
-    const ctx = canvas.getContext('2d');
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
 
-    let effect = 'snow'; // эхлэх үед цас
+  <div class="controls" aria-hidden="false">
+    <div class="row" style="justify-content:space-between">
+      <div style="display:flex;gap:6px">
+        <button id="prevBtn" class="btn">◀</button>
+        <button id="seasonBtn" class="btn">Change Season</button>
+        <button id="nextBtn" class="btn">▶</button>
+      </div>
+      <button id="musicToggle" class="btn">Play Music</button>
+    </div>
 
-    // ========= ЦАС =========
-    let snowflakes = [];
-    function createSnowflakes() {
-      snowflakes = [];
-      for (let i = 0; i < 200; i++) {
-        snowflakes.push({
-          x: Math.random() * canvas.width,
-          y: Math.random() * canvas.height,
-          radius: Math.random() * 3 + 2,
-          speed: Math.random() * 1 + 0.5
-        });
-      }
-    }
+    <div style="font-size:13px;color:#cfe6ff">Улирал: <strong id="seasonLabel">Winter</strong></div>
 
-    function drawSnow() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = 'white';
-      for (let flake of snowflakes) {
-        ctx.beginPath();
-        ctx.arc(flake.x, flake.y, flake.radius, 0, Math.PI * 2);
-        ctx.fill();
-      }
-    }
+    <!-- Winter controls -->
+    <div id="winterControls" class="effect-controls active">
+      <label>Цасны нягт ( ширхэг ) <span id="snowCountLabel">220</span></label>
+      <input id="snowCount" type="range" min="40" max="800" value="220">
+      <label>Цасны хэмжээ (px) <span id="snowSizeLabel">4</span></label>
+      <input id="snowSize" type="range" min="1" max="12" value="4">
+    </div>
 
-    function updateSnow() {
-      for (let flake of snowflakes) {
-        flake.y += flake.speed;
-        if (flake.y > canvas.height) {
-          flake.y = -flake.radius;
-          flake.x = Math.random() * canvas.width;
-        }
-      }
-    }
+    <!-- Summer controls -->
+    <div id="summerControls" class="effect-controls">
+      <label>Борооны нягт ( ширхэг ) <span id="rainCountLabel">150</span></label>
+      <input id="rainCount" type="range" min="40" max="700" value="150">
+      <label>Борооны хурд (1-8) <span id="rainSpeedLabel">6</span></label>
+      <input id="rainSpeed" type="range" min="1" max="12" value="6">
+    </div>
 
-    // ========= БОРОО =========
-    let raindrops = [];
-    function createRaindrops() {
-      raindrops = [];
-      for (let i = 0; i < 300; i++) {
-        raindrops.push({
-          x: Math.random() * canvas.width,
-          y: Math.random() * canvas.height,
-          length: Math.random() * 20 + 10,
-          speed: Math.random() * 4 + 4
-        });
-      }
-    }
+    <!-- Autumn controls -->
+    <div id="autumnControls" class="effect-controls">
+      <label>Навчны нягт ( ширхэг ) <span id="leafCountLabel">40</span></label>
+      <input id="leafCount" type="range" min="8" max="180" value="40">
+      <label>Навчны хурд (1-10) <span id="leafSpeedLabel">6</span></label>
+      <input id="leafSpeed" type="range" min="1" max="12" value="6">
+    </div>
 
-    function drawRain() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.strokeStyle = 'rgba(174,194,224,0.5)';
-      ctx.lineWidth = 1;
-      for (let drop of raindrops) {
-        ctx.beginPath();
-        ctx.moveTo(drop.x, drop.y);
-        ctx.lineTo(drop.x, drop.y + drop.length);
-        ctx.stroke();
-      }
-    }
+    <!-- Fog control (common) -->
+    <div style="margin-top:6px">
+      <label>Манан зузаан (0-1) <span id="fogOpacityLabel">0.9</span></label>
+      <input id="fogOpacity" type="range" min="0" max="1" step="0.01" value="0.9">
+    </div>
+  </div>
 
-    function updateRain() {
-      for (let drop of raindrops) {
-        drop.y += drop.speed;
-        if (drop.y > canvas.height) {
-          drop.y = -drop.length;
-          drop.x = Math.random() * canvas.width;
-        }
-      }
-    }
+  <!-- Music for each season: replace src with your files -->
+  <audio id="winterMusic" loop preload="auto"><source src="winter.mp3" type="audio/mpeg"></audio>
+  <audio id="summerMusic" loop preload="auto"><source src="summer.mp3" type="audio/mpeg"></audio>
+  <audio id="autumnMusic" loop preload="auto"><source src="autumn.mp3" type="audio/mpeg"></audio>
 
-    // ========= МАНАН =========
-    let fogParticles = [];
-    function createFog() {
-      fogParticles = [];
-      for (let i = 0; i < 50; i++) {
-        fogParticles.push({
-          x: Math.random() * canvas.width,
-          y: Math.random() * canvas.height,
-          radius: Math.random() * 200 + 100,
-          speed: Math.random() * 0.3 + 0.2
-        });
-      }
-    }
+<script>
+/* ====== Helpers & DOM refs ====== */
+const seasons = ['winter','summer','autumn'];
+let current = 0;
+const seasonLabel = document.getElementById('seasonLabel');
+const seasonBtn = document.getElementById('seasonBtn');
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+const musicToggle = document.getElementById('musicToggle');
 
-    function drawFog() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = 'rgba(200,200,200,0.05)';
-      for (let fog of fogParticles) {
-        ctx.beginPath();
-        ctx.arc(fog.x, fog.y, fog.radius, 0, Math.PI * 2);
-        ctx.fill();
-      }
-    }
+const winterCtr = document.getElementById('winterControls');
+const summerCtr = document.getElementById('summerControls');
+const autumnCtr = document.getElementById('autumnControls');
 
-    function updateFog() {
-      for (let fog of fogParticles) {
-        fog.x += fog.speed;
-        if (fog.x - fog.radius > canvas.width) {
-          fog.x = -fog.radius;
-        }
-      }
-    }
+const fogLayer = document.getElementById('fogLayer');
+const fogOpacityInput = document.getElementById('fogOpacity');
+const fogOpacityLabel = document.getElementById('fogOpacityLabel');
 
-    // ========= ОДОД =========
-    let stars = [];
-    function createStars() {
-      stars = [];
-      for (let i = 0; i < 150; i++) {
-        stars.push({
-          x: Math.random() * canvas.width,
-          y: Math.random() * canvas.height,
-          radius: Math.random() * 1.5
-        });
-      }
-    }
+const snowLayer = document.getElementById('snowLayer');
+const rainLayer = document.getElementById('rainLayer');
+const leavesLayer = document.getElementById('leavesLayer');
+const starsLayer = document.getElementById('starsLayer');
 
-    function drawStars() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = 'white';
-      for (let star of stars) {
-        ctx.beginPath();
-        ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
-        ctx.fill();
-      }
-    }
+/* music */
+const musicMap = {
+  winter: document.getElementById('winterMusic'),
+  summer: document.getElementById('summerMusic'),
+  autumn: document.getElementById('autumnMusic')
+};
+let currentMusic = musicMap.winter;
+currentMusic.volume = 0.4;
 
-    function updateStars() {
-      // optional: twinkling effect
-    }
+/* ====== UI elements for winter (snow) ====== */
+const snowCount = document.getElementById('snowCount');
+const snowSize = document.getElementById('snowSize');
+const snowCountLabel = document.getElementById('snowCountLabel');
+const snowSizeLabel = document.getElementById('snowSizeLabel');
 
-    // ========= EFFECT SWITCH =========
-    function setEffect(newEffect) {
-      effect = newEffect;
-      if (effect === 'snow') createSnowflakes();
-      if (effect === 'rain') createRaindrops();
-      if (effect === 'fog') createFog();
-      if (effect === 'stars') createStars();
-    }
+/* summer (rain) */
+const rainCount = document.getElementById('rainCount');
+const rainSpeed = document.getElementById('rainSpeed');
+const rainCountLabel = document.getElementById('rainCountLabel');
+const rainSpeedLabel = document.getElementById('rainSpeedLabel');
 
-    function animate() {
-      requestAnimationFrame(animate);
-      if (effect === 'snow') {
-        drawSnow(); updateSnow();
-      } else if (effect === 'rain') {
-        drawRain(); updateRain();
-      } else if (effect === 'fog') {
-        drawFog(); updateFog();
-      } else if (effect === 'stars') {
-        drawStars(); updateStars();
-      }
-    }
+/* autumn (leaves) */
+const leafCount = document.getElementById('leafCount');
+const leafSpeed = document.getElementById('leafSpeed');
+const leafCountLabel = document.getElementById('leafCountLabel');
+const leafSpeedLabel = document.getElementById('leafSpeedLabel');
 
-    // эхлүүлэх
-    setEffect('snow');
-    animate();
-  </script>
+/* ====== state for effect objects ====== */
+let snowFlakes = [];
+let rainDrops = [];
+let leafNodes = [];
+let starNodes = [];
+
+/* ====== utility ====== */
+function rand(min,max){ return Math.random()*(max-min)+min; }
+
+/* ====== Stars (static small twinkle) ====== */
+(function makeStars(){
+  starsLayer.innerHTML='';
+  const count = 38;
+  for(let i=0;i<count;i++){
+    const s = document.createElement('div');
+    s.className = 'star';
+    s.style.left = (Math.random()*100)+'vw';
+    s.style.top = (Math.random()*50)+'vh';
+    const size = (Math.random()*1.6)+0.6;
+    s.style.width = size+'px';
+    s.style.height = size+'px';
+    s.style.animationDuration = (2 + Math.random()*3)+'s';
+    s.style.animationDelay = (Math.random()*6)+'s';
+    s.style.opacity = (0.5 + Math.random()*0.6);
+    starsLayer.appendChild(s);
+  }
+})();
+
+/* ====== SPAWN / RENDER functions ====== */
+
+/* SNOW */
+function spawnSnow(count, sizeAvg){
+  snowLayer.innerHTML = '';
+  snowFlakes = [];
+  for(let i=0;i<count;i++){
+    const f = document.createElement('div');
+    f.className = 'flake';
+    const size = (rand(sizeAvg*0.6, sizeAvg*1.4));
+    f.style.width = size + 'px';
+    f.style.height = size + 'px';
+    const left = rand(-8,108);
+    f.style.left = left + 'vw';
+    const fall = rand(6.5,14);
+    f.style.animationDuration = fall + 's';
+    const sway = rand(3.2,9.2) + 's';
+    f.style.setProperty('--wind', (rand(-36,36)) + 'px');
+    f.style.animationDelay = rand(-fall,0) + 's';
+    snowLayer.appendChild(f);
+    snowFlakes.push(f);
+  }
+}
+
+/* RAIN */
+function spawnRain(count, speedFactor){
+  rainLayer.innerHTML = '';
+  rainDrops = [];
+  for(let i=0;i<count;i++){
+    const d = document.createElement('div');
+    d.className = 'drop';
+    d.style.left = rand(0,100) + 'vw';
+    const len = rand(10,28);
+    d.style.height = len + 'px';
+    // speedFactor controls animation-duration inversely: larger speed -> shorter duration
+    const dur = Math.max(0.25, 3.2 - (speedFactor * 0.22)) * rand(0.6,1.3);
+    d.style.animationDuration = dur + 's';
+    d.style.animationDelay = rand(-2,0) + 's';
+    rainLayer.appendChild(d);
+    rainDrops.push(d);
+  }
+}
+
+/* LEAVES */
+function spawnLeaves(count, speedFactor){
+  leavesLayer.innerHTML = '';
+  leafNodes = [];
+  for(let i=0;i<count;i++){
+    const l = document.createElement('div');
+    l.className = 'leaf';
+    l.style.left = rand(-8,108) + 'vw';
+    const dur = Math.max(3, 10 - (speedFactor*0.6)) * rand(0.8,1.3);
+    l.style.animationDuration = dur + 's';
+    l.style.animationDelay = rand(-6,0) + 's';
+    // randomized size & rotation
+    const s = rand(12,26);
+    l.style.width = s+'px';
+    l.style.height = s+'px';
+    leavesLayer.appendChild(l);
+    leafNodes.push(l);
+  }
+}
+
+/* ====== switch to season ====== */
+function applySeason(idx){
+  current = idx % seasons.length;
+  const s = seasons[current];
+  document.body.classList.remove(...seasons);
+  document.body.classList.add(s);
+  seasonLabel.textContent = s.charAt(0).toUpperCase() + s.slice(1);
+
+  // toggle controls
+  winterCtr.classList.toggle('active', s==='winter');
+  summerCtr.classList.toggle('active', s==='summer');
+  autumnCtr.classList.toggle('active', s==='autumn');
+
+  // show/hide layers
+  snowLayer.style.display = (s==='winter') ? 'block' : 'none';
+  rainLayer.style.display = (s==='summer') ? 'block' : 'none';
+  leavesLayer.style.display = (s==='autumn') ? 'block' : 'none';
+  // stars + moon remain always visible (you can change if you like)
+
+  // music switch (stop previous)
+  Object.values(musicMap).forEach(m => { try{ m.pause(); m.currentTime = 0;}catch(e){} });
+  currentMusic = musicMap[s];
+  currentMusic.volume = 0.4;
+  // attempt autoplay (may be blocked until user interacts)
+  currentMusic.play().then(()=> {
+    musicToggle.textContent = 'Pause Music';
+  }).catch(()=> {
+    musicToggle.textContent = 'Play Music';
+  });
+
+  // spawn relevant effect with current control values
+  updateAllEffects();
+}
+
+/* ====== update functions read controls and respawn elements ====== */
+function updateAllEffects(){
+  // fog
+  const fogVal = parseFloat(fogOpacity.value);
+  fogLayer.style.opacity = fogVal;
+  fogOpacityLabel.textContent = fogVal.toFixed(2);
+
+  // snow
+  const sc = parseInt(snowCount.value,10);
+  const ss = parseFloat(snowSize.value);
+  snowCountLabel.textContent = sc;
+  snowSizeLabel.textContent = ss;
+  spawnSnow(sc, ss);
+
+  // rain
+  const rc = parseInt(rainCount.value,10);
+  const rspd = parseFloat(rainSpeed.value);
+  rainCountLabel.textContent = rc;
+  rainSpeedLabel.textContent = rspd;
+  spawnRain(rc, rspd);
+
+  // leaves
+  const lc = parseInt(leafCount.value,10);
+  const lspd = parseFloat(leafSpeed.value);
+  leafCountLabel.textContent = lc;
+  leafSpeedLabel.textContent = lspd;
+  spawnLeaves(lc, lspd);
+}
+
+/* ====== event listeners ====== */
+seasonBtn.addEventListener('click', ()=> applySeason(current+1));
+prevBtn.addEventListener('click', ()=> applySeason((current-1+seasons.length)%seasons.length));
+nextBtn.addEventListener('click', ()=> applySeason(current+1));
+
+// music toggle
+musicToggle.addEventListener('click', (e) => {
+  if (currentMusic.paused) {
+    currentMusic.play().then(()=> { musicToggle.textContent = 'Pause Music'; }).catch(()=>{});
+  } else {
+    currentMusic.pause(); musicToggle.textContent = 'Play Music';
+  }
+});
+
+// control inputs: update on change
+[snowCount,snowSize,rainCount,rainSpeed,leafCount,leafSpeed,fogOpacity].forEach(inp=>{
+  inp.addEventListener('input', updateAllEffects);
+});
+
+// initial spawn
+updateAllEffects();
+
+/* ensure only current season's layer visible at load */
+applySeason(0);
+
+/* handle window resize: not strictly necessary as we use vw/vh, but keep layers intact */
+window.addEventListener('resize', ()=> { /* if want to re-evaluate positions, respawn */ updateAllEffects(); });
+
+/* Optional: autoplay first music after first user gesture to satisfy autoplay policies */
+let firstInteraction = false;
+document.addEventListener('click', function onceInteract(){
+  if(firstInteraction) return;
+  firstInteraction = true;
+  // try to play current music (may be already attempted in applySeason)
+  currentMusic.play().catch(()=>{});
+  document.removeEventListener('click', onceInteract);
+});
+</script>
 </body>
 </html>
+
 
 
 
