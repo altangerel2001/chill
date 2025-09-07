@@ -220,99 +220,69 @@
 <html lang="mn">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Цас ба Бороо</title>
+  <title>Цас ба бороо анимац</title>
   <style>
     body {
-      margin: 0; padding: 0; overflow: hidden;
-      background: linear-gradient(180deg, #020617 0%, #071432 45%, #0b2546 100%);
-      height: 100vh; width: 100vw;
-      display: flex; align-items: center; justify-content: center;
+      margin:0; padding:0;
+      background:#0a0f1a;
+      overflow:hidden;
+      color:white; font-family:sans-serif;
     }
-    .scene { position: relative; width:100%; height:100%; overflow:hidden; }
-    .snow, .rain { position:absolute; inset:0; pointer-events:none; z-index:10; }
-
-    /* Snow */
+    #snowLayer, #rainLayer {
+      position:fixed; top:0; left:0; right:0; bottom:0;
+      pointer-events:none;
+      overflow:hidden;
+    }
     .flake {
-      position:absolute; background:white; border-radius:50%;
-      opacity:0.9; will-change: transform;
-      animation: snowFall linear infinite;
+      position:absolute;
+      background:white;
+      border-radius:50%;
+      opacity:0.8;
+      animation: fall linear infinite;
     }
-    @keyframes snowFall { to { transform: translate3d(0, 110vh, 0); } }
-
-    /* Rain */
+    @keyframes fall {
+      0% { transform:translateY(-10vh); }
+      100% { transform:translateY(110vh); }
+    }
     .drop {
-     position: absolute;
-     width: 2px; height: 18px;
-     background: rgba(200,200,255,0.5);
-     will-change: transform;
-     animation: rainFall linear infinite, rainSway ease-in-out infinite;
-   }
-   
-   @keyframes rainFall {
-     to { transform: translate3d(0, 110vh, 0); }
-   }
-   
-   @keyframes rainSway {
-     0%,100% { transform: translateX(0px); }
-     50% { transform: translateX(10px); } /* салхины хазайлт */
-   }
-
-    /* Controls */
-    .controls {
-      position: absolute; bottom: 20px; right: 20px; z-index: 20;
-      background: rgba(0,0,0,0.5); padding: 12px; border-radius: 12px;
-      display: flex; flex-direction: column; gap: 8px;
-      color: white; font-family: sans-serif; font-size: 14px;
+      position:absolute;
+      width:2px; height:20px;
+      background:rgba(173,216,230,0.8);
+      animation: rainFall linear infinite, sway ease-in-out infinite;
     }
-    .controls label { display:flex; flex-direction:column; gap:4px; }
-    .controls input[type=range]{ width:150px; }
-    button { padding:6px 10px; border:none; border-radius:6px; cursor:pointer; }
+    @keyframes rainFall {
+      0% { transform:translateY(-10vh); }
+      100% { transform:translateY(110vh); }
+    }
+    @keyframes sway {
+      0%,100% { transform:translateX(0); }
+      50% { transform:translateX(5px); }
+    }
+    .controls {
+      position:fixed; top:10px; left:10px;
+      background:rgba(0,0,0,0.5); padding:10px;
+      border-radius:8px;
+    }
   </style>
 </head>
 <body>
-  <div class="scene">
-    <div class="snow"></div>
-    <div class="rain"></div>
-  </div>
+  <div id="snowLayer"></div>
+  <div id="rainLayer" style="display:none;"></div>
 
   <div class="controls">
-    <button id="toggleSeason">☀ Улирлыг солих</button>
-    <label>❄ Цасны тоо
-      <input id="snowRange" type="range" min="20" max="300" value="120">
-    </label>
-    <label>🌧 Бороо хурд
-      <input id="rainRange" type="range" min="200" max="2000" value="1000">
-    </label>
+    <button id="toggleSeason">🌨/🌧 Солих</button><br>
+    <label>Count: <input type="range" id="snowRange" min="20" max="300" value="120"></label><br>
+    <label>Speed: <input type="range" id="rainRange" min="500" max="5000" step="100" value="2000"></label>
   </div>
 
-  <!-- Music -->
-  <audio id="snowMusic" loop>
-    <source src="music.mp3" type="audio/mpeg">
-  </audio>
-  <audio id="rainMusic" loop>
-    <source src="rain.mp3" type="audio/mpeg">
-  </audio>
-
 <script>
-const snowLayer = document.querySelector('.snow');
-const rainLayer = document.querySelector('.rain');
-const snowMusic = document.getElementById('snowMusic');
-const rainMusic = document.getElementById('rainMusic');
-
-let current = 'snow'; // эхлэх үед цас
+let snowLayer = document.getElementById('snowLayer');
+let rainLayer = document.getElementById('rainLayer');
+let current = 'snow';
 let snowCount = 120;
-let rainDuration = 1000;
+let rainDuration = 2000;
 
-// Music helper
-function playMusic(type){
-  snowMusic.pause(); rainMusic.pause();
-  snowMusic.currentTime=0; rainMusic.currentTime=0;
-  if(type==='snow'){ snowMusic.volume=0.4; snowMusic.play().catch(()=>{}); }
-  else { rainMusic.volume=0.4; rainMusic.play().catch(()=>{}); }
-}
-
-// Snow generator
+// ❄️ Snow generator
 function spawnSnow(count){
   snowLayer.innerHTML='';
   for(let i=0;i<count;i++){
@@ -327,7 +297,7 @@ function spawnSnow(count){
   }
 }
 
-// Rain generator
+// 🌧 Rain generator
 function spawnRain(count=120){
   rainLayer.innerHTML='';
   for(let i=0;i<count;i++){
@@ -335,18 +305,34 @@ function spawnRain(count=120){
     d.className='drop';
     d.style.left=Math.random()*100+'vw';
 
-    // Дусал бүрийн хурд өөр (random)
-    const duration = (rainDuration/1000) * (0.5 + Math.random()*1.2);
-    d.style.animationDuration = duration + 's, ' + (2+Math.random()*2)+'s'; 
-    // эхний animation (fall) хугацаа, хоёр дахь (sway) хугацаа
+    const duration = (rainDuration/1000) * (0.6 + Math.random()*1.4);
+    const swayDur = 2+Math.random()*2;
 
-    d.style.animationDelay = (-Math.random()*3)+'s, '+(-Math.random()*2)+'s';
+    d.style.animationDuration = duration + 's, ' + swayDur + 's';
+    d.style.animationDelay = (-Math.random()*duration)+'s, '+(-Math.random()*swayDur)+'s';
     rainLayer.appendChild(d);
   }
 }
 
-// Season toggle
+// 🧹 Цэвэрлэх функц
+function clearWeather(){
+  snowLayer.innerHTML = '';
+  rainLayer.innerHTML = '';
+}
+
+// 🎚 Slider event
+document.getElementById('snowRange').addEventListener('input',e=>{
+  snowCount=parseInt(e.target.value);
+  if(current==='snow') spawnSnow(snowCount);
+});
+document.getElementById('rainRange').addEventListener('input',e=>{
+  rainDuration=parseInt(e.target.value);
+  if(current==='rain') spawnRain(160);
+});
+
+// ☀️ Season toggle
 document.getElementById('toggleSeason').addEventListener('click',()=>{
+  clearWeather();
   if(current==='snow'){
     current='rain';
     snowLayer.style.display='none';
@@ -358,28 +344,14 @@ document.getElementById('toggleSeason').addEventListener('click',()=>{
     snowLayer.style.display='block';
     spawnSnow(snowCount);
   }
-  playMusic(current);
 });
 
-// Snow slider
-document.getElementById('snowRange').addEventListener('input',(e)=>{
-  snowCount=parseInt(e.target.value);
-  if(current==='snow') spawnSnow(snowCount);
-});
-
-// Rain speed slider
-document.getElementById('rainRange').addEventListener('input',(e)=>{
-  rainDuration=parseInt(e.target.value);
-  if(current==='rain') spawnRain(160);
-});
-
-// Init
+// эхлэхдээ цас харуулна
 spawnSnow(snowCount);
-rainLayer.style.display='none';
-playMusic('snow');
 </script>
 </body>
 </html>
+
 
 
 
