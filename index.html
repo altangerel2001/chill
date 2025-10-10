@@ -402,7 +402,7 @@ setMoonForSeason('snow');
 </html> -->
 
 
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="mn">
   <head>
     <meta charset="UTF-8">
@@ -459,7 +459,117 @@ setMoonForSeason('snow');
     </script>
   </body>
 </html>
+ -->
 
+<!DOCTYPE html>
+<html lang="mn">
+  <head>
+    <meta charset="UTF-8">
+    <title>Night Sky with Rotating Moon 🌕</title>
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+    <!-- Canvas 2D сар -->
+    <canvas id="moonCanvas"></canvas>
+
+    <!-- Одод ба комет -->
+    <div class="sky">
+      <div class="stars"></div>
+      <div class="comet"></div>
+      <div class="moving-stars"></div>
+    </div>
+
+    <script>
+      // ===== Canvas 2D эргэдэг сар =====
+      const canvas = document.getElementById("moonCanvas");
+      const ctx = canvas.getContext("2d");
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+
+      const moonImage = new Image();
+      moonImage.src = "FullMoon2010-removebg-preview.png"; // project доторх сарны зураг
+
+      let angle = 0;
+
+      // Одны массив
+      const starsArray = [];
+      const numStars = 300;
+
+      for (let i = 0; i < numStars; i++) {
+        starsArray.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          radius: Math.random() * 2,
+          alpha: Math.random(),
+          delta: Math.random() * 0.02
+        });
+      }
+
+      moonImage.onload = () => animate();
+
+      function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Оддыг зурна
+        starsArray.forEach(star => {
+          star.alpha += star.delta;
+          if(star.alpha > 1 || star.alpha < 0) star.delta *= -1;
+
+          ctx.beginPath();
+          ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(255,255,255,${star.alpha})`;
+          ctx.fill();
+        });
+
+        // Эргэдэг сар
+        const x = canvas.width / 2;
+        const y = canvas.height / 2;
+        const size = 200;
+
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate(angle);
+        ctx.drawImage(moonImage, -size/2, -size/2, size, size);
+        ctx.restore();
+
+        angle += 0.002;
+
+        requestAnimationFrame(animate);
+      }
+
+      // Canvas resize
+      window.addEventListener("resize", () => {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      });
+
+      // ===== CSS animation од + комет =====
+      const starsContainer = document.querySelector(".stars");
+      const numDivStars = 1500;
+
+      for (let i = 0; i < numDivStars; i++) {
+        const star = document.createElement("div");
+        star.classList.add("star");
+        star.style.top = `${Math.random() * 100}vh`;
+        star.style.left = `${Math.random() * 100}vw`;
+        star.style.animationDuration = `${Math.random() * 5 + 2}s`;
+        star.style.animationDelay = `${Math.random() * 5}s`;
+        starsContainer.appendChild(star);
+      }
+
+      const movingStarsContainer = document.querySelector(".moving-stars");
+      const numMovingStars = 20;
+      for (let i = 0; i < numMovingStars; i++) {
+        const movingStar = document.createElement("div");
+        movingStar.classList.add("moving-star");
+        movingStar.style.top = `${Math.random() * 100}vh`;
+        movingStar.style.left = `${Math.random() * 100}vw`;
+        movingStar.style.animationDuration = `${Math.random() * 10 + 10}s`;
+        movingStarsContainer.appendChild(movingStar);
+      }
+    </script>
+  </body>
+</html>
 
 
 
