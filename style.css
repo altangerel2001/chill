@@ -1,130 +1,190 @@
+/* base */
 body{
-      margin: 0;
-      overflow: hidden;
+  margin: 0;
+  overflow: hidden;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
 }
 
 .sky{
-      position: relative;
-      width: 100vw;
-      height: 100vh;
-      background: linear-gradient(to bottom, #001848, #000);
-      overflow: hidden;
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  background: linear-gradient(to bottom, #001848 0%, #000015 100%);
+  overflow: hidden;
 }
 
-
+/* stars */
 .stars{
-      width: 100%;
-      height: 100%;
-      position: absolute;
-      top: 0;
-      left: 0;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
 }
-
 
 .star{
-      position: absolute;
-      width: 2px;
-      height: 2px;
-      background: white;
-      border-radius: 50%;
-      animation: twinkle 5s infinite alternate;
+  position: absolute;
+  background: white;
+  border-radius: 50%;
+  opacity: 0.2;
+  box-shadow: 0 0 6px rgba(255,255,255,0.6);
+  animation: twinkle 5s infinite alternate;
+  transform: translateZ(0);
 }
-
 
 @keyframes twinkle{
-      0%, 100% {
-            opacity: 0.2;
-      }
-      50%{
-            opacity: 1;
-      }
+  0%, 100% { opacity: 0.15; transform: scale(0.9); }
+  50%{ opacity: 1; transform: scale(1.2); }
 }
 
+/* comet */
 .comet{
-      position: absolute;
-      width: 5px;
-      height: 5px;
-      background: white;
-      border-radius: 50%;
-      box-shadow: 0 0 20px white, 0 0 40px white, 0 0 60px white;
-      top: -50px;
-      left: -50px;
-      animation: moveComet 10s linear infinite ;
-
-
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background: white;
+  border-radius: 50%;
+  box-shadow: 0 0 20px rgba(255,255,255,0.9), 0 0 40px rgba(255,255,255,0.7);
+  top: -60px;
+  left: -60px;
+  animation: moveComet 12s linear infinite;
+  opacity: 0.9;
 }
-
 
 @keyframes moveComet{
-      0%{
-            transform: translate(0,0);
-            
-      }
-      100%{
-            transform: translate(100vw, 100vh);
-      }
+  0%{ transform: translate(0,0) rotate(0deg); opacity: 0.9; }
+  70%{ opacity: 0.9; }
+  100%{ transform: translate(110vw, 110vh) rotate(30deg); opacity: 0; }
 }
 
-
+/* moving stars */
 .moving-stars {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-  }
-  
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
 
 .moving-star{
-      position: absolute;
-      width: 3px;
-      height: 3px;
-      background: white;
-      border-radius: 50%;
-      box-shadow: 0 0 5px white, 0 0 10px white;
-      animation: moveStar 8s linear infinite, twinkle 5s infinite alternate;
-
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  background: white;
+  border-radius: 50%;
+  box-shadow: 0 0 6px rgba(255,255,255,0.9);
+  animation: moveStar linear infinite, twinkle 5s infinite alternate;
+  opacity: 0.9;
+  transform: translateZ(0);
 }
 
+/* moving path: translate across screen diagonally */
 @keyframes moveStar {
-      0% {
-          transform: translate(0, 0);
-      }
-      100% {
-          transform: translate(100vw, 100vh);
-      }
-  }
+  0% { transform: translate(0, 0) scale(1) rotate(0deg); opacity: 0.9; }
+  100% { transform: translate(120vw, 120vh) scale(0.6) rotate(20deg); opacity: 0; }
+}
 
+/* moon styling */
 .moon{
-      position: absolute;
-      width: 100px;
-      height: 100px;
-      background: white;
-      border-radius: 50%;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      box-shadow: 0 0 20px white, 0 0 40px white ;
-      transition: background 1s;
+  position: absolute;
+  width: 120px;
+  height: 120px;
+  top: 35%;
+  left: 60%;
+  transform: translate(-50%, -50%) rotate(0deg);
+  border-radius: 50%;
+  box-shadow: 0 8px 30px rgba(200,200,255,0.08), 0 0 60px rgba(255,255,255,0.06);
+  transition: background 800ms ease, transform 800ms ease, box-shadow 500ms ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  will-change: transform, background;
+  outline: none;
+  /* slow continuous rotation */
+  animation: slowRotate 60s linear infinite;
 }
 
-
-.new-moon{
-      background: black;
+/* quick click spin */
+.moon.spin{
+  animation: quickSpin 0.9s ease-in-out;
 }
 
+/* subtle continuous rotation keyframes */
+@keyframes slowRotate {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to   { transform: translate(-50%, -50%) rotate(360deg); }
+}
+@keyframes quickSpin {
+  0% { transform: translate(-50%, -50%) rotate(0deg) scale(1); }
+  50% { transform: translate(-50%, -50%) rotate(540deg) scale(1.06); }
+  100% { transform: translate(-50%, -50%) rotate(720deg) scale(1); }
+}
 
+/* realistic phases using radial & conic gradients */
+/* New moon (dark) */
+.new-moon {
+  background: radial-gradient(circle at 30% 30%, rgba(0,0,0,0.98) 20%, rgba(2,4,10,0.98) 60%);
+  box-shadow: 0 6px 30px rgba(0,0,0,0.6);
+}
+
+/* Crescent */
 .crescent-moon {
-      background: radial-gradient(circle at 25% 25%, white 25%, black 25%);
+  background:
+    radial-gradient(circle at 30% 30%, #fff 22%, rgba(0,0,0,0.0) 23%),
+    radial-gradient(circle at 40% 35%, rgba(0,0,0,0.9) 30%, rgba(0,0,0,0.0) 31%),
+    #111;
+  box-shadow: 0 8px 40px rgba(255,255,255,0.06);
 }
 
-.half-moon{
-      background: radial-gradient(circle at 50% 50%, white 50%, black 50%);
-
+/* Half moon */
+.half-moon {
+  background:
+    linear-gradient(90deg, #fff 50%, rgba(0,0,0,0.95) 50%);
+  box-shadow: 0 6px 30px rgba(255,255,255,0.05);
 }
 
+/* Gibbous */
 .gibbous-moon {
-      background: radial-gradient(circle at 75% 75%, white 75%, black 75%);
+  background:
+    radial-gradient(circle at 65% 45%, #fff 60%, rgba(0,0,0,0.0) 61%),
+    #222;
 }
 
-.full-moon{
-      background-color: white;
+/* Full moon */
+.full-moon {
+  background: radial-gradient(circle at 40% 35%, #fff 0%, #f0f0f0 40%, #e6e6e6 100%);
+  box-shadow: 0 10px 60px rgba(255,255,255,0.14), 0 2px 12px rgba(200,200,200,0.06);
+}
+
+/* tiny craters: pseudo-element */
+.moon::after {
+  content: "";
+  position: absolute;
+  width: 70%;
+  height: 70%;
+  border-radius: 50%;
+  top: 15%;
+  left: 15%;
+  background-image:
+    radial-gradient(circle at 25% 25%, rgba(0,0,0,0.06) 6%, transparent 6%),
+    radial-gradient(circle at 60% 35%, rgba(0,0,0,0.04) 5%, transparent 5%),
+    radial-gradient(circle at 40% 65%, rgba(0,0,0,0.03) 4%, transparent 4%);
+  opacity: 0.75;
+  pointer-events: none;
+}
+
+/* responsiveness - smaller moon on small screens */
+@media (max-width: 600px) {
+  .moon { width: 84px; height: 84px; top: 40%; left: 50%; }
+}
+
+/* small helper: phrase area */
+.phrase {
+  position: absolute;
+  bottom: 24px;
+  left: 24px;
+  color: rgba(255,255,255,0.7);
+  font-size: 14px;
+  backdrop-filter: blur(4px);
+  pointer-events: none;
 }
