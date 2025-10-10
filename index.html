@@ -403,24 +403,62 @@ setMoonForSeason('snow');
 
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="mn">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Interactive Night Sky</title>
-    <link rel="stylesheet" href="style.css" />
+    <meta charset="UTF-8">
+    <title>3D Moon 🌕</title>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.min.js"></script>
+    <style>
+      body { margin: 0; background: #000; overflow: hidden; }
+      canvas { display: block; }
+    </style>
   </head>
   <body>
-    <div class="sky">
-      <div class="stars"></div>
-      <div class="comet"></div>
-      <div class="moving-stars"></div>
-      <div class="moon" id="moon"></div>
-      <div class="phrase"></div>
-    </div>
-    <script src="main.js"></script>
+    <script>
+      // Scene, Camera, Renderer
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+      const renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      document.body.appendChild(renderer.domElement);
+
+      // Texture
+      const textureLoader = new THREE.TextureLoader();
+      const moonTexture = textureLoader.load("https://threejsfundamentals.org/threejs/resources/images/moon.jpg");
+
+      // Moon geometry & material
+      const geometry = new THREE.SphereGeometry(2, 64, 64);
+      const material = new THREE.MeshStandardMaterial({ map: moonTexture });
+      const moon = new THREE.Mesh(geometry, material);
+      scene.add(moon);
+
+      // Light
+      const light = new THREE.PointLight(0xffffff, 2);
+      light.position.set(5, 5, 5);
+      scene.add(light);
+
+      // Camera position
+      camera.position.z = 5;
+
+      // Animation
+      function animate() {
+        requestAnimationFrame(animate);
+        moon.rotation.y += 0.002; // удаанаар эргэх
+        renderer.render(scene, camera);
+      }
+
+      animate();
+
+      // Window resize fix
+      window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      });
+    </script>
   </body>
 </html>
+
 
 
 
