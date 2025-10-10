@@ -18,7 +18,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Generate countless stars
   const starsContainer = document.querySelector(".stars");
-  const numStars = 1000; // Adjust this number for more or fewer stars
+  const numStars = 10000; // Adjust this number for more or fewer stars
 
   for (let i = 0; i < numStars; i++) {
     const star = document.createElement("div");
