@@ -406,54 +406,55 @@ setMoonForSeason('snow');
 <html lang="mn">
   <head>
     <meta charset="UTF-8">
-    <title>3D Moon 🌕</title>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.min.js"></script>
-    <style>
-      body { margin: 0; background: #000; overflow: hidden; }
-      canvas { display: block; }
-    </style>
+    <title>Canvas 2D Эргэдэг сар 🌕</title>
+    <link rel="stylesheet" href="style.css">
   </head>
   <body>
+    <canvas id="moonCanvas"></canvas>
+
     <script>
-      // Scene, Camera, Renderer
-      const scene = new THREE.Scene();
-      const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-      const renderer = new THREE.WebGLRenderer({ antialias: true });
-      renderer.setSize(window.innerWidth, window.innerHeight);
-      document.body.appendChild(renderer.domElement);
+      const canvas = document.getElementById("moonCanvas");
+      const ctx = canvas.getContext("2d");
 
-      // Texture
-      const textureLoader = new THREE.TextureLoader();
-      const moonTexture = textureLoader.load("https://threejsfundamentals.org/threejs/resources/images/moon.jpg");
+      // Canvas хэмжээ
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
 
-      // Moon geometry & material
-      const geometry = new THREE.SphereGeometry(2, 64, 64);
-      const material = new THREE.MeshStandardMaterial({ map: moonTexture });
-      const moon = new THREE.Mesh(geometry, material);
-      scene.add(moon);
+      // Сарны зураг
+      const moonImage = new Image();
+      moonImage.src = "moon.jpg"; // project дотор байгаа зураг
 
-      // Light
-      const light = new THREE.PointLight(0xffffff, 2);
-      light.position.set(5, 5, 5);
-      scene.add(light);
+      // Энд rotation animation-ийн хувьсагч
+      let angle = 0;
 
-      // Camera position
-      camera.position.z = 5;
+      moonImage.onload = () => {
+        animate();
+      };
 
-      // Animation
       function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Canvas төвд зурах
+        const x = canvas.width / 2;
+        const y = canvas.height / 2;
+        const size = 200; // сарыг томруулах/жижгэрүүлэх хэмжээ
+
+        // Эргэлт
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate(angle);
+        ctx.drawImage(moonImage, -size / 2, -size / 2, size, size);
+        ctx.restore();
+
+        angle += 0.002; // эргэх хурд (удаан бол 0.001, хурдан бол 0.01)
+
         requestAnimationFrame(animate);
-        moon.rotation.y += 0.002; // удаанаар эргэх
-        renderer.render(scene, camera);
       }
 
-      animate();
-
-      // Window resize fix
-      window.addEventListener('resize', () => {
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(window.innerWidth, window.innerHeight);
+      // Цонхны хэмжээ өөрчлөгдвөл canvas автоматаар шинэчлэгдэх
+      window.addEventListener("resize", () => {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
       });
     </script>
   </body>
