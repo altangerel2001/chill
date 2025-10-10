@@ -1,7 +1,14 @@
-body{
-      margin: 0;
-      overflow: hidden;
+
+body {
+  margin: 0;
+  background: radial-gradient(circle at center, #001028, #000);
+  overflow: hidden;
 }
+
+canvas {
+  display: block;
+}
+
 
 .sky{
       position: relative;
@@ -120,17 +127,5 @@ body{
 
 .full-moon{
       background-color: white;
-}
-.moon {
-      animation: moonRotate 60s linear infinite;
-}
-
-@keyframes moonRotate {
-      from {
-            transform: translate(-50%, -50%) rotate(0deg);
-      }
-      to {
-            transform: translate(-50%, -50%) rotate(360deg);
-      }
 }
 
