@@ -46,7 +46,6 @@ function spawnSnow(count){
 }
 
 // ✨ Cinematic Rain Generator
-// 🎯 Realistic gravity-based rain
 function spawnRain(count = 180) {
   rainLayer.innerHTML = '';
 
@@ -54,49 +53,47 @@ function spawnRain(count = 180) {
     const d = document.createElement('div');
     d.className = 'drop';
 
-    // Random depth (0 = far, 1 = close)
+    // Depth layer (real effect)
     const depth = Math.random();
-    
-    // Base speed (real gravity-like)
-    let speed = 1.2 + Math.random() * 1.5; // ойролцоо constant acceleration
-    speed *= (1 + depth * 1.2);           // ойрхон дусал = илүү хурдан
+    let speed = (rainDuration / 1300) * (0.6 + Math.random() * 0.9);
 
-    // Wind effect (random sway left/right)
-    const wind = (Math.random() - 0.5) * 2; // -1 — +1
-    const windInfluence = wind * (0.4 + depth); // ойрын дусал илүү хүчтэй хөдөлнө
+    if (depth < 0.3) speed *= 1.4;   // near
+    else if (depth > 0.7) speed *= 0.7; // far
 
+    // Position
     d.style.left = Math.random() * 100 + 'vw';
     d.style.top = -(Math.random() * 20) + 'vh';
 
-    // Gravity simulation using Web Animations API
+    d.style.animation = `rainFall ${speed}s linear`;
+    
+    // Custom drop animation
+    const dropHeight = 120 + Math.random() * 80;
+
     d.animate(
       [
-        { transform: `translate(0, 0) rotate(12deg)` },
-        {
-          transform: `translate(${windInfluence * 20}px, 120vh) rotate(12deg)` 
-        }
+        { transform: `translateY(0px) rotate(12deg)` },
+        { transform: `translateY(${dropHeight}vh) rotate(12deg)` }
       ],
       {
-        duration: (1000 / speed), // speed → duration (inverse)
+        duration: speed * 1000,
         iterations: Infinity,
-        easing: "cubic-bezier(0.2, 0.8, 0.4, 1)", // real acceleration curve
       }
     );
 
-    // Splash
+    // Splash effect when drop hits bottom
     d.addEventListener('animationiteration', () => {
       const sp = document.createElement('div');
       sp.className = 'splash';
       sp.style.left = d.style.left;
-      sp.style.bottom = '1vh';
+      sp.style.bottom = '2vh';
       rainLayer.appendChild(sp);
+
       setTimeout(() => sp.remove(), 250);
     });
 
     rainLayer.appendChild(d);
   }
 }
-
 
 
 function setMoonForSeason(season){

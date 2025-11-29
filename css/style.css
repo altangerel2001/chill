@@ -47,12 +47,12 @@ body {
   position: absolute;
   width: 2px;
   height: 25px;
-  background: linear-gradient(to bottom, rgba(180,200,255,0.7), rgba(255,255,255,0));
-  border-radius: 2px;
+  background: linear-gradient(to bottom, rgba(180,200,255,0.6), rgba(255,255,255,0));
+  filter: blur(0.6px);
   opacity: 0.9;
-  pointer-events: none;
-  filter: blur(0.5px);
-  transform: rotate(12deg);
+  border-radius: 2px;
+  will-change: transform;
+  transform: rotate(12deg); /* налуу */
 }
 
 /* Splash (дусал газар ойх effect) */
