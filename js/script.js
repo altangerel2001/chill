@@ -19,6 +19,33 @@ function playMusic(type){
 }
 
 // ✨ Сайжруулсан Snow generator
+function spawnSnow(count){
+  snowLayer.innerHTML='';
+  for(let i=0;i<count;i++){
+    const f=document.createElement('div');
+    f.className='flake';
+
+    const depth = Math.random();
+    let size = 2 + Math.random() * 5;
+
+    if(depth < 0.3) size *= 0.6;
+    else if(depth > 0.7) size *= 1.5;
+
+    f.style.width = size+'px';
+    f.style.height = size+'px';
+
+    f.style.left = Math.random()*100+'vw';
+
+    const fall = 6 + Math.random()*10;
+    f.style.animationDuration = fall+'s';
+
+    f.style.animationDelay = (-Math.random()*10)+'s';
+
+    snowLayer.appendChild(f);
+  }
+}
+
+// ✨ Cinematic Rain Generator
 // 🎯 Realistic gravity-based rain
 function spawnRain(count = 180) {
   rainLayer.innerHTML = '';
