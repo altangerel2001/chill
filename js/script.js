@@ -45,20 +45,56 @@ function spawnSnow(count){
   }
 }
 
-function spawnRain(count=100){
-  rainLayer.innerHTML='';
-  for(let i=0;i<count;i++){
-    const d=document.createElement('div');
-    d.className='drop';
-    d.style.left=Math.random()*100+'vw';
+// ✨ Cinematic Rain Generator
+function spawnRain(count = 180) {
+  rainLayer.innerHTML = '';
 
-    const dur = (rainDuration/1000)*(0.5+Math.random()*1.2);
-    d.style.animationDuration = dur+'s';
-    d.style.animationDelay = (-Math.random()*2)+'s';
+  for (let i = 0; i < count; i++) {
+    const d = document.createElement('div');
+    d.className = 'drop';
+
+    // Depth layer (real effect)
+    const depth = Math.random();
+    let speed = (rainDuration / 1300) * (0.6 + Math.random() * 0.9);
+
+    if (depth < 0.3) speed *= 1.4;   // near
+    else if (depth > 0.7) speed *= 0.7; // far
+
+    // Position
+    d.style.left = Math.random() * 100 + 'vw';
+    d.style.top = -(Math.random() * 20) + 'vh';
+
+    d.style.animation = `rainFall ${speed}s linear`;
+    
+    // Custom drop animation
+    const dropHeight = 120 + Math.random() * 80;
+
+    d.animate(
+      [
+        { transform: `translateY(0px) rotate(12deg)` },
+        { transform: `translateY(${dropHeight}vh) rotate(12deg)` }
+      ],
+      {
+        duration: speed * 1000,
+        iterations: Infinity,
+      }
+    );
+
+    // Splash effect when drop hits bottom
+    d.addEventListener('animationiteration', () => {
+      const sp = document.createElement('div');
+      sp.className = 'splash';
+      sp.style.left = d.style.left;
+      sp.style.bottom = '2vh';
+      rainLayer.appendChild(sp);
+
+      setTimeout(() => sp.remove(), 250);
+    });
 
     rainLayer.appendChild(d);
   }
 }
+
 
 function setMoonForSeason(season){
   if(season==='snow'){

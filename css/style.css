@@ -42,15 +42,36 @@ body {
 }
 
 /* Бороо */
+/* ✨ Cinematic Rain Drops */
 .drop {
   position: absolute;
   width: 2px;
-  height: 18px;
-  background: rgba(200,200,255,0.4);
+  height: 25px;
+  background: linear-gradient(to bottom, rgba(180,200,255,0.6), rgba(255,255,255,0));
+  filter: blur(0.6px);
+  opacity: 0.9;
+  border-radius: 2px;
   will-change: transform;
-  animation: rainFall linear infinite;
+  transform: rotate(12deg); /* налуу */
 }
-@keyframes rainFall { to { transform: translate3d(0, 110vh, 0); } }
+
+/* Splash (дусал газар ойх effect) */
+.splash {
+  position: absolute;
+  width: 8px;
+  height: 2px;
+  background: rgba(255,255,255,0.4);
+  border-radius: 50%;
+  opacity: 0.7;
+  filter: blur(1px);
+  animation: splashAnim 0.25s ease-out forwards;
+}
+
+@keyframes splashAnim {
+  0% { transform: scaleX(0.3); opacity: 1; }
+  100% { transform: scaleX(1.4); opacity: 0; }
+}
+
 
 /* Сар */
 .moon {
