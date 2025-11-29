@@ -46,6 +46,7 @@ function spawnSnow(count){
 }
 
 // ✨ Cinematic Rain Generator
+// ✨ Cinematic Rain Generator
 function spawnRain(count = 180) {
   rainLayer.innerHTML = '';
 
@@ -94,6 +95,7 @@ function spawnRain(count = 180) {
     rainLayer.appendChild(d);
   }
 }
+
 
 
 function setMoonForSeason(season){
